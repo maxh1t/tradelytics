@@ -6,7 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint --max-warnings=0",
+    "lint:fix": "pnpm lint --fix",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write .",
+    "types": "tsc",
+    "fix": "pnpm lint:fix && pnpm format:fix && pnpm types"
   },
   "dependencies": {
     "next": "16.0.3",
@@ -20,6 +25,10 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.0.3",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-unused-imports": "^4.3.0",
+    "prettier": "^3.6.2",
     "tailwindcss": "^4",
     "typescript": "^5"
   },
