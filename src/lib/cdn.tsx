@@ -28,12 +28,12 @@ const theme: Partial<Theme> = {
   'colors-fg-warning': '#ed702f',
   'colors-line-default': '#dcdfe4',
   'colors-line-heavy': '#9397a0',
-  'borderRadius-cta': 'var(--cdp-web-borderRadius-lg)',
-  'borderRadius-link': 'var(--cdp-web-borderRadius-lg)',
+  'borderRadius-cta': 'var(--cdp-web-borderRadius-md)',
+  'borderRadius-link': 'var(--cdp-web-borderRadius-md)',
   'borderRadius-input': 'var(--cdp-web-borderRadius-md)',
   'borderRadius-select-trigger': 'var(--cdp-web-borderRadius-md)',
   'borderRadius-select-list': 'var(--cdp-web-borderRadius-md)',
-  'borderRadius-modal': 'var(--cdp-web-borderRadius-lg)',
+  'borderRadius-modal': 'var(--cdp-web-borderRadius-md)',
 }
 
 export function CDPProvider({ children }: PropsWithChildren) {

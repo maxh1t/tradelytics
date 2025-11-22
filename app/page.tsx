@@ -1,22 +1,26 @@
 'use client'
-import { AuthButton } from '@coinbase/cdp-react/components/AuthButton'
-import { useIsSignedIn } from '@coinbase/cdp-hooks'
+
+import { useEffect } from 'react'
+
+import { Dashboard } from '@/src/components/Dashboard'
+import { Header } from '@/src/components/Header'
+import { useHyperliquidStore } from '@/src/stores/hyperliquid'
 
 export default function Home() {
-  const { isSignedIn } = useIsSignedIn()
+  const hydrateClient = useHyperliquidStore((s) => s.hydrateClient)
+  const disconnect = useHyperliquidStore((s) => s.disconnect)
+  useEffect(() => {
+    hydrateClient()
+
+    return () => {
+      disconnect()
+    }
+  }, [hydrateClient, disconnect])
 
   return (
-    <div>
-      {isSignedIn ? (
-        <div>
-          Welcome! You're signed in. <AuthButton />
-        </div>
-      ) : (
-        <div>
-          <h2>Please sign in</h2>
-          <AuthButton />
-        </div>
-      )}
+    <div className='flex flex-col min-h-0 h-screen'>
+      <Header />
+      <Dashboard />
     </div>
   )
 }
