@@ -1,5 +1,6 @@
 'use client'
 
+import { useEvmAddress } from '@coinbase/cdp-hooks'
 import { useMemo } from 'react'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/components/ui/card'
@@ -7,6 +8,7 @@ import { useHyperliquidData } from '@/src/hooks/useHyperliquidData'
 import { useWalletStore } from '@/src/stores/wallet'
 
 export function RiskAlertsPanel() {
+  const { evmAddress } = useEvmAddress()
   const wallet = useWalletStore()
   const hl = useHyperliquidData()
 
@@ -44,39 +46,41 @@ export function RiskAlertsPanel() {
       }
     })
 
-    // === Wallet Alerts ===
-    // concentration
-    wallet.tokens.forEach((t) => {
-      const exposure = t.value / walletTotal
-      if (exposure > 0.1) {
-        list.push(`${t.symbol} dominates wallet (${(exposure * 100).toFixed(1)}%)`)
+    if (evmAddress) {
+      // === Wallet Alerts ===
+      // concentration
+      wallet.tokens.forEach((t) => {
+        const exposure = t.value / walletTotal
+        if (exposure > 0.1) {
+          list.push(`${t.symbol} dominates wallet (${(exposure * 100).toFixed(1)}%)`)
+        }
+      })
+
+      // diversification
+      if (wallet.tokens.length === 1) {
+        list.push(`Wallet diversification is low (only ${wallet.tokens[0].symbol})`)
       }
-    })
 
-    // diversification
-    if (wallet.tokens.length === 1) {
-      list.push(`Wallet diversification is low (only ${wallet.tokens[0].symbol})`)
-    }
+      // stablecoin presence
+      const hasStable = wallet.tokens.some((t) => ['USDC', 'EURC'].includes(t.symbol))
+      if (!hasStable) {
+        list.push(`Wallet has no stablecoin exposure`)
+      }
 
-    // stablecoin presence
-    const hasStable = wallet.tokens.some((t) => ['USDC', 'EURC'].includes(t.symbol))
-    if (!hasStable) {
-      list.push(`Wallet has no stablecoin exposure`)
-    }
+      // gas balance
+      const eth = wallet.tokens.find((t) => t.symbol === 'ETH')
+      if (eth && eth.amount < 0.005) {
+        list.push(`ETH balance is low for gas fees`)
+      }
 
-    // gas balance
-    const eth = wallet.tokens.find((t) => t.symbol === 'ETH')
-    if (eth && eth.amount < 0.005) {
-      list.push(`ETH balance is low for gas fees`)
-    }
-
-    // wallet vs HL ratio
-    if (walletTotal < hlTotal * 0.1) {
-      list.push('Wallet balance is too small compared to HL exposure')
+      // wallet vs HL ratio
+      if (walletTotal < hlTotal * 0.1) {
+        list.push('Wallet balance is too small compared to HL exposure')
+      }
     }
 
     return list
-  }, [wallet.tokens, hl])
+  }, [wallet.tokens, hl, evmAddress])
 
   return (
     <Card>

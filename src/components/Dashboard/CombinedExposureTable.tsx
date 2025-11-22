@@ -1,12 +1,16 @@
 'use client'
 
+import { TableSkeletonRows } from '@/src/components/Dashboard/TableSkeletonRows'
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/components/ui/card'
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/src/components/ui/table'
 import { useHyperliquidData } from '@/src/hooks/useHyperliquidData'
+import { useHyperliquidStore } from '@/src/stores/hyperliquid'
 import { useWalletStore } from '@/src/stores/wallet'
 import { formatUsdc } from '@/src/utils/format'
 
 export function CombinedExposureTable() {
+  const walletLoading = useWalletStore((s) => s.loading)
+  const hlLoading = useHyperliquidStore((s) => s.loading)
   const wallet = useWalletStore((s) => s.tokens)
   const hl = useHyperliquidData()
 
@@ -56,15 +60,25 @@ export function CombinedExposureTable() {
           </TableHeader>
 
           <TableBody>
-            {rows.map((e) => (
-              <TableRow key={e.symbol}>
-                <TableCell>{e.symbol}</TableCell>
-                <TableCell>{formatUsdc(e.walletUsd)}</TableCell>
-                <TableCell>{formatUsdc(e.hlUsd)}</TableCell>
-                <TableCell>{formatUsdc(e.totalUsd)}</TableCell>
-                <TableCell>{(e.weight * 100).toFixed(1)} %</TableCell>
+            {walletLoading || hlLoading ? (
+              <TableSkeletonRows rows={3} cols={5} />
+            ) : rows.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className='text-sm text-gray-500'>
+                  Connect your wallet and HL to see exposure
+                </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              rows.map((e) => (
+                <TableRow key={e.symbol}>
+                  <TableCell>{e.symbol}</TableCell>
+                  <TableCell>{formatUsdc(e.walletUsd)}</TableCell>
+                  <TableCell>{formatUsdc(e.hlUsd)}</TableCell>
+                  <TableCell>{formatUsdc(e.totalUsd)}</TableCell>
+                  <TableCell>{(e.weight * 100).toFixed(1)} %</TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </CardContent>
