@@ -6,8 +6,6 @@ import Link from 'next/link'
 import { FormEvent, useState } from 'react'
 
 import Logo from '@/public/logo.svg'
-import { useWalletBalance } from '@/src/hooks/useWalletBalance'
-import { cn } from '@/src/lib/utils'
 import { useHyperliquidStore } from '@/src/stores/hyperliquid'
 
 import { Button } from '../ui/button'
@@ -24,7 +22,6 @@ import { FieldGroup, Field, FieldLabel, FieldError } from '../ui/field'
 import { Input } from '../ui/input'
 
 export function Header() {
-  const { usdcValue } = useWalletBalance()
   const {
     clearinghouseState,
     setPrivateKey,
@@ -47,12 +44,6 @@ export function Header() {
     setHlSecret('')
   }
 
-  const hlEquity = clearinghouseState?.marginSummary?.accountValue
-    ? Number(clearinghouseState.marginSummary.accountValue)
-    : 0
-
-  const total = usdcValue + hlEquity
-
   return (
     <nav className='flex justify-between items-center h-12 px-4 border-b bg-white'>
       <Link href='/' className='flex items-center gap-2'>
@@ -61,8 +52,6 @@ export function Header() {
       </Link>
 
       <div className='flex items-center gap-3'>
-        {(clearinghouseState || usdcValue) && <div className={cn('text-xs')}>{total.toFixed(2)} USD</div>}
-
         <AuthButton placeholder={SmallPlaceholder} signInModal={SmallSignInModal} signOutButton={SmallSignOutButton} />
 
         {HLLoading ? (
