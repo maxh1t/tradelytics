@@ -58,21 +58,15 @@ export const useHyperliquidStore = create<HyperliquidState>()(
           // Test account access
           const clearinghouseState = await infoClient.clearinghouseState({ user: walletAddress })
 
-          const wsTransport = new hl.WebSocketTransport({ isTestnet: true })
           // WS subscriptions
+          const wsTransport = new hl.WebSocketTransport({ isTestnet: true })
           const subsClient = new hl.SubscriptionClient({ transport: wsTransport })
 
           subsClient.clearinghouseState({ user: walletAddress }, ({ clearinghouseState }) => {
             set({ clearinghouseState })
           })
 
-          set({
-            infoClient,
-            subsClient,
-            clearinghouseState,
-            wsTransport,
-            loading: false,
-          })
+          set({ infoClient, subsClient, clearinghouseState, wsTransport, loading: false })
 
           return true
         } catch (err) {
