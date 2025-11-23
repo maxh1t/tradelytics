@@ -1,6 +1,7 @@
 import './globals.css'
 import { Geist, Geist_Mono } from 'next/font/google'
 
+import { Toaster } from '@/src/components/ui/sonner'
 import { CDPProvider } from '@/src/lib/cdn'
 
 import type { Metadata } from 'next'
@@ -28,7 +29,10 @@ export default function RootLayout({
   return (
     <html lang='en'>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <CDPProvider>{children}</CDPProvider>
+        <CDPProvider>
+          {children}
+          <Toaster />
+        </CDPProvider>
       </body>
     </html>
   )

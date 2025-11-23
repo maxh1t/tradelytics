@@ -22,26 +22,15 @@ import { FieldGroup, Field, FieldLabel, FieldError } from '../ui/field'
 import { Input } from '../ui/input'
 
 export function Header() {
-  const {
-    clearinghouseState,
-    setPrivateKey,
-    setWalletAddress,
-    init,
-    error,
-    disconnect,
-    loading: HLLoading,
-  } = useHyperliquidStore()
+  const { clearinghouseState, setWalletAddress, init, error, disconnect, loading: HLLoading } = useHyperliquidStore()
 
   const [hlAddress, setHlAddress] = useState('')
-  const [hlSecret, setHlSecret] = useState('')
 
   const handleHLConnect = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setWalletAddress(hlAddress)
-    setPrivateKey(hlSecret)
     init()
     setHlAddress('')
-    setHlSecret('')
   }
 
   return (
@@ -71,15 +60,7 @@ export function Header() {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Connect HyperLiquid</DialogTitle>
-                <DialogDescription>
-                  <Link
-                    href='https://help.cornix.io/en/articles/11010094-how-to-create-api-keys-hyperliquid'
-                    target='_blank'
-                    className='underline text-blue-600'
-                  >
-                    How to generate an API key
-                  </Link>
-                </DialogDescription>
+                <DialogDescription>Input your HyperLiquid account address</DialogDescription>
               </DialogHeader>
 
               <form onSubmit={handleHLConnect}>
@@ -87,11 +68,6 @@ export function Header() {
                   <Field>
                     <FieldLabel>Account Wallet Address</FieldLabel>
                     <Input required value={hlAddress} onChange={(e) => setHlAddress(e.target.value)} />
-                  </Field>
-
-                  <Field>
-                    <FieldLabel>API Private Key</FieldLabel>
-                    <Input required value={hlSecret} onChange={(e) => setHlSecret(e.target.value)} />
                   </Field>
 
                   {error && <FieldError>{error}</FieldError>}

@@ -10,7 +10,6 @@ type HyperliquidState = {
   subsClient: hl.SubscriptionClient | null
   wsTransport: hl.WebSocketTransport | null
 
-  privateKey: string | null
   walletAddress: string | null
 
   loading: boolean
@@ -18,7 +17,6 @@ type HyperliquidState = {
 
   clearinghouseState: ClearinghouseStateResponse | null
 
-  setPrivateKey: (key: string) => void
   setWalletAddress: (addr: string) => void
 
   init: () => Promise<boolean>
@@ -32,23 +30,21 @@ export const useHyperliquidStore = create<HyperliquidState>()(
       infoClient: null,
       subsClient: null,
       wsTransport: null,
+      exchClient: null,
 
-      privateKey: null,
       walletAddress: null,
-
       loading: true,
       error: null,
 
       clearinghouseState: null,
 
-      setPrivateKey: (privateKey) => set({ privateKey }),
       setWalletAddress: (walletAddress) => set({ walletAddress }),
 
       init: async () => {
         set({ loading: true, error: null })
 
-        const { privateKey, walletAddress } = get()
-        if (!privateKey || !walletAddress) {
+        const { walletAddress } = get()
+        if (!walletAddress) {
           set({ loading: false, error: 'Missing key or wallet' })
           return false
         }
@@ -71,6 +67,7 @@ export const useHyperliquidStore = create<HyperliquidState>()(
           })
 
           set({
+            infoClient,
             subsClient,
             clearinghouseState,
             wsTransport,
@@ -85,9 +82,9 @@ export const useHyperliquidStore = create<HyperliquidState>()(
         }
       },
       hydrateClient: async () => {
-        const { privateKey, walletAddress, clearinghouseState } = get()
+        const { walletAddress, clearinghouseState } = get()
         set({ loading: false })
-        if (!privateKey || !walletAddress || clearinghouseState) return
+        if (!walletAddress || clearinghouseState) return
 
         await get().init()
       },
@@ -100,13 +97,13 @@ export const useHyperliquidStore = create<HyperliquidState>()(
         set({
           infoClient: null,
           subsClient: null,
+          wsTransport: null,
           clearinghouseState: null,
           error: null,
           walletAddress: null,
-          privateKey: null,
         })
       },
     }),
-    { name: 'hyperliquid-store', partialize: (s) => ({ privateKey: s.privateKey, walletAddress: s.walletAddress }) },
+    { name: 'hyperliquid-store', partialize: (s) => ({ walletAddress: s.walletAddress }) },
   ),
 )

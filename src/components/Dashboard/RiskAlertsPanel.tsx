@@ -2,80 +2,103 @@
 
 import { useEvmAddress } from '@coinbase/cdp-hooks'
 import { useMemo } from 'react'
+import { toast } from 'sonner'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/components/ui/card'
 import { useHyperliquidData } from '@/src/hooks/useHyperliquidData'
 import { useWalletStore } from '@/src/stores/wallet'
 
+import { Button } from '../ui/button'
+
+type Alert = {
+  message: string
+  fixable: boolean
+  fixLabel?: string
+  onFix?: () => void
+}
+
 export function RiskAlertsPanel() {
-  const { evmAddress } = useEvmAddress()
   const wallet = useWalletStore()
   const hl = useHyperliquidData()
+  const { evmAddress } = useEvmAddress()
 
-  const alerts = useMemo(() => {
-    const list: string[] = []
+  const alerts = useMemo<Alert[]>(() => {
+    const list: Alert[] = []
 
-    if (!wallet.tokens.length && !hl) return list
-
-    const walletTotal = wallet.tokens.reduce((a, t) => a + t.value, 0)
+    const walletTotal = wallet.tokens.reduce((s, t) => s + t.value, 0)
     const hlTotal = hl?.accountValue ?? 0
     const total = walletTotal + hlTotal
 
-    // === HyperLiquid Alerts ===
-    hl?.positions.forEach((p) => {
-      // leverage
-      if (p.leverage > 10) {
-        list.push(`${p.symbol} leverage is too high (${p.leverage}x)`)
-      }
+    // HL alerts
+    if (hl && hl.positions.length > 0) {
+      hl.positions.forEach((p) => {
+        if (p.leverage > 10) {
+          list.push({
+            message: `${p.symbol} leverage is too high (${p.leverage}x)`,
+            fixable: true,
+            fixLabel: 'Reduce leverage',
+            onFix: () => notImplemented('Reduce leverage'),
+          })
+        }
 
-      // unrealized loss
-      const lossPercent = p.pnl / (hlTotal || 1)
-      if (lossPercent < -0.05) {
-        list.push(`${p.symbol} unrealized loss exceeds 5% of account`)
-      }
+        if (p.pnl < 0 && Math.abs(p.pnl) > hlTotal * 0.05) {
+          list.push({
+            message: `${p.symbol} unrealized loss exceeds 5 % of account`,
+            fixable: false,
+          })
+        }
 
-      // liquidation risk
-      if (p.liq && p.liq < p.entry * 0.8) {
-        list.push(`${p.symbol} liquidation price is close`)
-      }
+        if (p.liq && p.liq < p.entry * 0.8) {
+          list.push({
+            message: `${p.symbol} liquidation price is close`,
+            fixable: true,
+            fixLabel: 'Reduce size',
+            onFix: () => notImplemented('Reduce size'),
+          })
+        }
 
-      // exposure
-      const exposure = p.value / total
-      if (exposure > 0.3) {
-        list.push(`${p.symbol} exposure is high (${(exposure * 100).toFixed(1)}%)`)
-      }
-    })
+        const exposure = p.value / total
+        if (exposure > 0.3) {
+          list.push({
+            message: `${p.symbol} exposure is high (${(exposure * 100).toFixed(1)} %)`,
+            fixable: false,
+          })
+        }
+      })
+    }
 
+    // Wallet alerts
     if (evmAddress) {
-      // === Wallet Alerts ===
-      // concentration
       wallet.tokens.forEach((t) => {
-        const exposure = t.value / walletTotal
-        if (exposure > 0.1) {
-          list.push(`${t.symbol} dominates wallet (${(exposure * 100).toFixed(1)}%)`)
+        const exposure = walletTotal > 0 ? t.value / walletTotal : 0
+        if (exposure > 0.2) {
+          list.push({
+            message: `${t.symbol} dominates wallet (${(exposure * 100).toFixed(1)} %)`,
+            fixable: true,
+            fixLabel: 'Rebalance',
+            onFix: () => notImplemented('Rebalance'),
+          })
         }
       })
 
-      // diversification
-      if (wallet.tokens.length === 1) {
-        list.push(`Wallet diversification is low (only ${wallet.tokens[0].symbol})`)
-      }
-
-      // stablecoin presence
-      const hasStable = wallet.tokens.some((t) => ['USDC', 'EURC'].includes(t.symbol))
-      if (!hasStable) {
-        list.push(`Wallet has no stablecoin exposure`)
-      }
-
-      // gas balance
       const eth = wallet.tokens.find((t) => t.symbol === 'ETH')
       if (eth && eth.amount < 0.005) {
-        list.push(`ETH balance is low for gas fees`)
+        list.push({
+          message: 'ETH balance is low for gas fees',
+          fixable: true,
+          fixLabel: 'Buy ETH',
+          onFix: () => notImplemented('Buy ETH'),
+        })
       }
 
-      // wallet vs HL ratio
-      if (walletTotal < hlTotal * 0.1) {
-        list.push('Wallet balance is too small compared to HL exposure')
+      const hasStable = wallet.tokens.some((t) => t.symbol === 'USDC' || t.symbol === 'EURC')
+      if (!hasStable) {
+        list.push({
+          message: 'Wallet has no stablecoin exposure',
+          fixable: true,
+          fixLabel: 'Buy USDC',
+          onFix: () => notImplemented('Buy USDC'),
+        })
       }
     }
 
@@ -92,11 +115,23 @@ export function RiskAlertsPanel() {
         {alerts.length === 0 && <div className='text-sm text-gray-500'>No active alerts</div>}
 
         {alerts.map((a, i) => (
-          <div key={i} className='text-sm text-red-600'>
-            {a}
+          <div key={i} className='flex items-center justify-between border p-2 rounded-sm bg-red-50 text-red-700'>
+            <div className='text-sm'>{a.message}</div>
+
+            {a.fixable && a.onFix && (
+              <Button size='sm' variant='outline' onClick={a.onFix}>
+                {a.fixLabel}
+              </Button>
+            )}
           </div>
         ))}
       </CardContent>
     </Card>
   )
+}
+
+function notImplemented(name: string) {
+  toast.warning('Not implemented in demo', {
+    description: `${name} action will be available later`,
+  })
 }
