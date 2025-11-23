@@ -1,36 +1,9 @@
 import { useEvmAddress } from '@coinbase/cdp-hooks'
 import { PropsWithChildren, useCallback, useEffect, useRef } from 'react'
-import { createPublicClient, formatEther, http } from 'viem'
-import { baseSepolia } from 'viem/chains'
 
 import { useWalletStore } from '@/src/stores/wallet'
 
 import { Token } from '../types'
-
-type PriceResponse = {
-  data: {
-    amount: '2748.33'
-    base: 'ETH'
-    currency: 'USDC'
-  }
-}
-
-const API_PRICES = {
-  eth: 'https://api.coinbase.com/v2/prices/ETH-USDC/buy',
-  eurc: 'https://api.coinbase.com/v2/prices/EURC-USDC/buy',
-}
-
-// Simple ETH price from CDP (fallback)
-async function fetchPriceUsd(url: string) {
-  const res = await fetch(url)
-  const data = (await res.json()) as PriceResponse
-  return Number(data.data?.amount)
-}
-
-const client = createPublicClient({
-  chain: baseSepolia,
-  transport: http(),
-})
 
 export function WalletProvider({ children }: PropsWithChildren) {
   const setLoading = useWalletStore((s) => s.setLoading)
@@ -78,56 +51,89 @@ export function WalletProvider({ children }: PropsWithChildren) {
   return children
 }
 
-async function fetchErc20Balance(address: `0x${string}`, token: `0x${string}`) {
-  const [balance, decimals] = await Promise.all([
-    client.readContract({
-      address: token,
-      abi: erc20Abi,
-      functionName: 'balanceOf',
-      args: [address],
-    }),
-    client.readContract({
-      address: token,
-      abi: erc20Abi,
-      functionName: 'decimals',
-      args: [],
-    }),
-  ])
-
-  return Number(balance) / 10 ** Number(decimals)
+type PriceResponse = {
+  data: {
+    amount: '2748.33'
+  }
 }
 
-export const erc20Abi = [
-  {
-    name: 'balanceOf',
-    type: 'function',
-    stateMutability: 'view',
-    inputs: [{ name: 'owner', type: 'address' }],
-    outputs: [{ name: 'balance', type: 'uint256' }],
-  },
-  {
-    name: 'decimals',
-    type: 'function',
-    stateMutability: 'view',
-    inputs: [],
-    outputs: [{ name: '', type: 'uint8' }],
-  },
-]
+const API_PRICES = {
+  eth: 'https://api.coinbase.com/v2/prices/ETH-USDC/buy',
+  eurc: 'https://api.coinbase.com/v2/prices/EURC-USDC/buy',
+}
 
-async function fetchWalletTokens(address: `0x${string}`): Promise<Token[]> {
-  const [ethWei, usdcAmount, eurcAmount] = await Promise.all([
-    client.getBalance({ address }),
-    fetchErc20Balance(address, '0x036CbD53842c5426634e7929541eC2318f3dCF7e'),
-    fetchErc20Balance(address, '0x808456652fdb597867f38412077A9182bf77359F'),
-  ])
+async function fetchPriceUsd(url: string) {
+  const res = await fetch(url)
+  const data = (await res.json()) as PriceResponse
+  return Number(data.data?.amount)
+}
+
+function normalizeAmount(amount: { amount: string; decimals: number }) {
+  return Number(amount.amount) / 10 ** amount.decimals
+}
+
+export type TokenBalanceResponse = {
+  balances: TokenBalance[]
+  nextPageToken: string | null
+}
+
+export type TokenBalance = {
+  token: {
+    network: 'base-sepolia' | string
+    contractAddress: `0x${string}`
+    symbol: string
+    name: string
+  }
+  amount: {
+    amount: string
+    decimals: number
+  }
+}
+
+export async function fetchWalletTokens(address: `0x${string}`): Promise<Token[]> {
+  const res = await fetch(`/api?address=${address}`)
+  const { balances } = (await res.json()) as TokenBalanceResponse
+
+  let ethAmount = 0
+  let usdcAmount = 0
+  let eurcAmount = 0
+
+  balances.forEach((b: TokenBalance) => {
+    const amt = normalizeAmount(b.amount)
+
+    switch (b.token.symbol) {
+      case 'ETH':
+        ethAmount = amt
+        break
+      case 'USDC':
+        usdcAmount = amt
+        break
+      case 'EURC':
+        eurcAmount = amt
+        break
+    }
+  })
 
   const [ethPrice, eurcPrice] = await Promise.all([fetchPriceUsd(API_PRICES.eth), fetchPriceUsd(API_PRICES.eurc)])
 
-  const eth = Number(formatEther(ethWei))
-
   return [
-    { symbol: 'ETH', amount: eth, price: ethPrice, value: eth * ethPrice },
-    { symbol: 'USDC', amount: usdcAmount, price: 1, value: usdcAmount },
-    { symbol: 'EURC', amount: eurcAmount, price: eurcPrice, value: eurcAmount * eurcPrice },
+    {
+      symbol: 'ETH',
+      amount: ethAmount,
+      price: ethPrice,
+      value: ethAmount * ethPrice,
+    },
+    {
+      symbol: 'USDC',
+      amount: usdcAmount,
+      price: 1,
+      value: usdcAmount,
+    },
+    {
+      symbol: 'EURC',
+      amount: eurcAmount,
+      price: eurcPrice,
+      value: eurcAmount * eurcPrice,
+    },
   ]
 }

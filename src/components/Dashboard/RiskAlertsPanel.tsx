@@ -71,7 +71,7 @@ export function RiskAlertsPanel() {
     if (evmAddress) {
       wallet.tokens?.forEach((t) => {
         const exposure = walletTotal > 0 ? t.value / walletTotal : 0
-        if (exposure > 0.2) {
+        if (exposure > 0.5) {
           list.push({
             message: `${t.symbol} dominates wallet (${(exposure * 100).toFixed(1)} %)`,
             fixable: true,
@@ -131,7 +131,5 @@ export function RiskAlertsPanel() {
 }
 
 function notImplemented(name: string) {
-  toast.warning('Not implemented in demo', {
-    description: `${name} action will be available later`,
-  })
+  toast.error(`${name} is not implemented yet.`)
 }
