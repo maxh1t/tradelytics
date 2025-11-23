@@ -53,9 +53,9 @@ export function CombinedExposureTable() {
           <TableHeader>
             <TableRow>
               <TableHead>Asset</TableHead>
-              <TableHead>Wallet USD</TableHead>
-              <TableHead>HL USD</TableHead>
-              <TableHead>Total USD</TableHead>
+              <TableHead>Wallet</TableHead>
+              <TableHead>Hyperliquid</TableHead>
+              <TableHead>Total</TableHead>
               <TableHead>Weight</TableHead>
             </TableRow>
           </TableHeader>
@@ -66,7 +66,7 @@ export function CombinedExposureTable() {
             ) : rows.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className='text-sm text-gray-500'>
-                  Connect your wallet and HL to see exposure
+                  Connect your wallet and Hyperliquid to see exposure
                 </TableCell>
               </TableRow>
             ) : (

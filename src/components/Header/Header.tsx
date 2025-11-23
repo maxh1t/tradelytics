@@ -1,9 +1,11 @@
 'use client'
 
+import { useEvmAddress } from '@coinbase/cdp-hooks'
 import { AuthButton, AuthButtonProps, SignInModal, SignInModalTrigger, SignOutButton } from '@coinbase/cdp-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { FormEvent, useState } from 'react'
+import { toast } from 'sonner'
 
 import Logo from '@/public/logo.svg'
 import { useHyperliquidStore } from '@/src/stores/hyperliquid'
@@ -23,7 +25,7 @@ import { Input } from '../ui/input'
 
 export function Header() {
   const { clearinghouseState, setWalletAddress, init, error, disconnect, loading: HLLoading } = useHyperliquidStore()
-
+  const { evmAddress } = useEvmAddress()
   const [hlAddress, setHlAddress] = useState('')
 
   const handleHLConnect = (e: FormEvent<HTMLFormElement>) => {
@@ -31,6 +33,12 @@ export function Header() {
     setWalletAddress(hlAddress)
     init()
     setHlAddress('')
+  }
+
+  const handleCopyAddress = async () => {
+    if (!evmAddress) return
+    await navigator.clipboard.writeText(evmAddress)
+    toast.success('Wallet address copied')
   }
 
   return (
@@ -41,6 +49,12 @@ export function Header() {
       </Link>
 
       <div className='flex items-center gap-3'>
+        {evmAddress && (
+          <Button onClick={handleCopyAddress} size='sm' variant='outline'>
+            {short(evmAddress)}
+          </Button>
+        )}
+
         <AuthButton placeholder={SmallPlaceholder} signInModal={SmallSignInModal} signOutButton={SmallSignOutButton} />
 
         {HLLoading ? (
@@ -49,18 +63,18 @@ export function Header() {
           </Button>
         ) : clearinghouseState ? (
           <Button size='sm' variant='outline' onClick={disconnect}>
-            Disconnect HL
+            Disconnect Hyperliquid
           </Button>
         ) : (
           <Dialog>
             <DialogTrigger asChild>
-              <Button size='sm'>Connect HL</Button>
+              <Button size='sm'>Connect Hyperliquid</Button>
             </DialogTrigger>
 
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Connect HyperLiquid</DialogTitle>
-                <DialogDescription>Enter your HyperLiquid account wallet address</DialogDescription>
+                <DialogTitle>Connect Hyperliquid</DialogTitle>
+                <DialogDescription>Enter your Hyperliquid account wallet address</DialogDescription>
               </DialogHeader>
 
               <form onSubmit={handleHLConnect}>
@@ -109,3 +123,7 @@ const SmallSignOutButton: AuthButtonProps['signOutButton'] = (props) => (
     </Button>
   </SignOutButton>
 )
+
+function short(addr: string) {
+  return addr.slice(0, 6) + '...' + addr.slice(-4)
+}

@@ -31,7 +31,7 @@ export function PortfolioSummaryCard() {
 
       <SummaryCard title='Wallet Value' value={evmAddress ? formatUsdc(walletValue) : '—'} loading={walletLoading} />
 
-      <SummaryCard title='HL Account Value' value={hl ? formatUsdc(hlValue) : '—'} loading={hlLoading} />
+      <SummaryCard title='Hyperliquid Account Value' value={hl ? formatUsdc(hlValue) : '—'} loading={hlLoading} />
 
       <SummaryCard
         title='Unrealized PnL'

@@ -15,7 +15,7 @@ export function PositionsTable() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>HyperLiquid Open Positions</CardTitle>
+        <CardTitle>Hyperliquid Open Positions</CardTitle>
       </CardHeader>
       <CardContent>
         <Table>
@@ -38,7 +38,7 @@ export function PositionsTable() {
             ) : !hl || hl.positions.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className='text-sm text-gray-500'>
-                  Connect your HyperLiquid key to view positions
+                  Connect your Hyperliquid key to view positions
                 </TableCell>
               </TableRow>
             ) : (
