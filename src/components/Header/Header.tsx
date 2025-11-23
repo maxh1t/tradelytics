@@ -60,7 +60,7 @@ export function Header() {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Connect HyperLiquid</DialogTitle>
-                <DialogDescription>Input your HyperLiquid account address</DialogDescription>
+                <DialogDescription>Enter your HyperLiquid account wallet address</DialogDescription>
               </DialogHeader>
 
               <form onSubmit={handleHLConnect}>

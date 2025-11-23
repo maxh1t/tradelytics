@@ -25,7 +25,7 @@ export function RiskAlertsPanel() {
   const alerts = useMemo<Alert[]>(() => {
     const list: Alert[] = []
 
-    const walletTotal = wallet.tokens.reduce((s, t) => s + t.value, 0)
+    const walletTotal = wallet.tokens?.reduce((s, t) => s + t.value, 0) ?? 0
     const hlTotal = hl?.accountValue ?? 0
     const total = walletTotal + hlTotal
 
@@ -69,7 +69,7 @@ export function RiskAlertsPanel() {
 
     // Wallet alerts
     if (evmAddress) {
-      wallet.tokens.forEach((t) => {
+      wallet.tokens?.forEach((t) => {
         const exposure = walletTotal > 0 ? t.value / walletTotal : 0
         if (exposure > 0.2) {
           list.push({
@@ -81,7 +81,7 @@ export function RiskAlertsPanel() {
         }
       })
 
-      const eth = wallet.tokens.find((t) => t.symbol === 'ETH')
+      const eth = wallet.tokens?.find((t) => t.symbol === 'ETH')
       if (eth && eth.amount < 0.005) {
         list.push({
           message: 'ETH balance is low for gas fees',
@@ -91,7 +91,7 @@ export function RiskAlertsPanel() {
         })
       }
 
-      const hasStable = wallet.tokens.some((t) => t.symbol === 'USDC' || t.symbol === 'EURC')
+      const hasStable = wallet.tokens?.some((t) => t.symbol === 'USDC' || t.symbol === 'EURC')
       if (!hasStable) {
         list.push({
           message: 'Wallet has no stablecoin exposure',

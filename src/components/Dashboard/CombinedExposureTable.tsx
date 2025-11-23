@@ -11,14 +11,15 @@ import { formatUsdc } from '@/src/utils/format'
 export function CombinedExposureTable() {
   const walletLoading = useWalletStore((s) => s.loading)
   const hlLoading = useHyperliquidStore((s) => s.loading)
-  const wallet = useWalletStore((s) => s.tokens)
+  const tokens = useWalletStore((s) => s.tokens)
   const hl = useHyperliquidData()
 
   // Build map: symbol -> walletUsd
-  const walletMap = wallet.reduce<Record<string, number>>((acc, t) => {
-    acc[t.symbol.toUpperCase()] = (acc[t.symbol.toUpperCase()] || 0) + t.value
-    return acc
-  }, {})
+  const walletMap =
+    tokens?.reduce<Record<string, number>>((acc, t) => {
+      acc[t.symbol.toUpperCase()] = (acc[t.symbol.toUpperCase()] || 0) + t.value
+      return acc
+    }, {}) ?? {}
 
   // Build map: symbol -> hlUsd
   const hlMap = (hl?.positions || []).reduce<Record<string, number>>((acc, p) => {

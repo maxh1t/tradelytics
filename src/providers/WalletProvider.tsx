@@ -61,7 +61,7 @@ export function WalletProvider({ children }: PropsWithChildren) {
       // reset everything cleanly
       firstLoadDone.current = false
       setLoading(false)
-      setTokens([])
+      setTokens(null)
       return
     }
 

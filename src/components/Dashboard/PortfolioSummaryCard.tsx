@@ -15,7 +15,7 @@ export function PortfolioSummaryCard() {
   const walletLoading = useWalletStore((s) => s.loading)
   const hlLoading = useHyperliquidStore((s) => s.loading)
 
-  const walletValue = tokens.reduce((sum, t) => sum + (t.value || 0), 0)
+  const walletValue = tokens?.reduce((sum, t) => sum + (t.value || 0), 0) ?? 0
   const hlValue = hl?.accountValue ?? 0
   const unrealizedPnl = hl?.totalUnrealized ?? 0
 

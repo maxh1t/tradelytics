@@ -29,14 +29,14 @@ export function WalletAssetsTable() {
           <TableBody>
             {loading ? (
               <TableSkeletonRows rows={3} cols={4} />
-            ) : tokens.length === 0 ? (
+            ) : !tokens || tokens.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={4} className='text-sm text-gray-500'>
                   Connect your wallet to view assets
                 </TableCell>
               </TableRow>
             ) : (
-              tokens.map((asset) => (
+              tokens?.map((asset) => (
                 <TableRow key={asset.symbol}>
                   <TableCell>{asset.symbol}</TableCell>
                   <TableCell>{asset.amount}</TableCell>
