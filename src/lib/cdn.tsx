@@ -8,7 +8,7 @@ const config: Config = {
     createOnLogin: 'smart',
   },
   appName: 'Tradelytics',
-  appLogoUrl: 'http://localhost:3000/logo.svg',
+  appLogoUrl: 'https://tradelytics.vercel.app/logo.svg',
   authMethods: ['email', 'sms', 'oauth:google', 'oauth:apple', 'oauth:x'],
   showCoinbaseFooter: true,
 }

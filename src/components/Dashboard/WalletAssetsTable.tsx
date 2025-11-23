@@ -1,5 +1,7 @@
 'use client'
 
+import { useEvmAddress } from '@coinbase/cdp-hooks'
+
 import { TableSkeletonRows } from '@/src/components/Dashboard/TableSkeletonRows'
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/components/ui/card'
 import { Table, TableBody, TableRow, TableHead, TableHeader, TableCell } from '@/src/components/ui/table'
@@ -9,6 +11,7 @@ import { formatUsdc } from '@/src/utils/format'
 export function WalletAssetsTable() {
   const tokens = useWalletStore((s) => s.tokens)
   const loading = useWalletStore((s) => s.loading)
+  const { evmAddress } = useEvmAddress()
 
   return (
     <Card>
@@ -29,7 +32,7 @@ export function WalletAssetsTable() {
           <TableBody>
             {loading ? (
               <TableSkeletonRows rows={3} cols={4} />
-            ) : !tokens || tokens.length === 0 ? (
+            ) : !evmAddress || !tokens || tokens.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={4} className='text-sm text-gray-500'>
                   Connect your wallet to view assets

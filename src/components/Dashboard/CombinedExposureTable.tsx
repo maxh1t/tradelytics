@@ -1,5 +1,7 @@
 'use client'
 
+import { useEvmAddress } from '@coinbase/cdp-hooks'
+
 import { TableSkeletonRows } from '@/src/components/Dashboard/TableSkeletonRows'
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/components/ui/card'
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/src/components/ui/table'
@@ -13,13 +15,15 @@ export function CombinedExposureTable() {
   const hlLoading = useHyperliquidStore((s) => s.loading)
   const tokens = useWalletStore((s) => s.tokens)
   const hl = useHyperliquidData()
+  const { evmAddress } = useEvmAddress()
 
   // Build map: symbol -> walletUsd
-  const walletMap =
-    tokens?.reduce<Record<string, number>>((acc, t) => {
-      acc[t.symbol.toUpperCase()] = (acc[t.symbol.toUpperCase()] || 0) + t.value
-      return acc
-    }, {}) ?? {}
+  const walletMap = evmAddress
+    ? (tokens?.reduce<Record<string, number>>((acc, t) => {
+        acc[t.symbol.toUpperCase()] = (acc[t.symbol.toUpperCase()] || 0) + t.value
+        return acc
+      }, {}) ?? {})
+    : {}
 
   // Build map: symbol -> hlUsd
   const hlMap = (hl?.positions || []).reduce<Record<string, number>>((acc, p) => {
